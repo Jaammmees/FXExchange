@@ -3,10 +3,11 @@ import oandapyV20.endpoints.instruments as instruments
 import config
 import pandas as pd
 import pytz
+from datetime import datetime
 
 api = API(access_token=config.access_token)
 
-def fetch_fx_data(instrument, count=50, granularity='S30'):
+def fetch_fx_data(instrument, granularity, count=50):
     params = {"count": count, "granularity": granularity}
     candles = instruments.InstrumentsCandles(instrument=instrument, params=params)
     response = api.request(candles)
