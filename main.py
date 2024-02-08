@@ -23,9 +23,6 @@ class ForexApp(QMainWindow):
 
         layout = QVBoxLayout(centralWidget)
 
-        layout.setContentsMargins(50, 50, 50, 50)  
-        layout.setSpacing(0)
-
 
         # Placeholder for the matplotlib canvas
         self.canvas = None
@@ -50,8 +47,9 @@ class ForexApp(QMainWindow):
             self.canvas.deleteLater()
 
         # Create a new figure for each update
-        fig, axes = mpf.plot(df, type='candle', style='yahoo', volume=True, figsize=(10, 6), returnfig=True)
-        fig.subplots_adjust(left=0.05, right=0.95)
+        fig, axes = mpf.plot(df, type='candle', style='yahoo', volume=True, figsize=(10, 6), returnfig=True, scale_padding={'left': 0.05, 'right': 1.5, 'top': 0.1, 'bottom': 0.7})
+
+
         self.canvas = FigureCanvas(fig)
         self.centralWidget().layout().addWidget(self.canvas)
         self.canvas.draw()
