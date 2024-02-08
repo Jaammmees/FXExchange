@@ -2,6 +2,7 @@ from oandapyV20 import API
 import oandapyV20.endpoints.instruments as instruments
 import config
 import pandas as pd
+import pytz
 
 api = API(access_token=config.access_token)
 
@@ -22,5 +23,7 @@ def fetch_fx_data(instrument, count=50, granularity='S30'):
     
     df = pd.DataFrame(data, columns=['Time', 'Open', 'High', 'Low', 'Close'])
     df.set_index('Time', inplace=True)
+    adelaide_tz = pytz.timezone('Australia/Adelaide')
+    df.index = df.index.tz_convert(adelaide_tz)
     
     return df
