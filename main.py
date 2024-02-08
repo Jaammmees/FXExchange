@@ -1,4 +1,5 @@
 import sys
+import matplotlib.pyplot as plt
 from PyQt5.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QWidget
 from PyQt5.QtCore import QTimer
 from matplotlib.figure import Figure
@@ -38,7 +39,9 @@ class ForexApp(QMainWindow):
         
         # Clear the figure for a fresh plot
         if self.canvas is not None:
+            fig = self.canvas.figure
             # If canvas exists, remove it from the layout and delete it to prevent memory leak
+            plt.close(fig)
             self.canvas.setParent(None)
             self.canvas.deleteLater()
 
