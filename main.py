@@ -1,6 +1,7 @@
 import sys
 import matplotlib.pyplot as plt
 from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QLabel, QDesktopWidget, QLineEdit
+from PyQt5.QtWidgets import QTableWidget, QTableWidgetItem
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from PyQt5.QtCore import QTimer
 from matplotlib.figure import Figure
@@ -25,13 +26,13 @@ class ForexApp(QMainWindow):
 
         mainLayout = QHBoxLayout()
 
-        controlLayout = QVBoxLayout()
+        self.controlLayout = QVBoxLayout()
         orderBookLabel = QLabel("Order Book Data")
         buyButton = QPushButton('Buy')
         sellButton = QPushButton('Sell')
-        controlLayout.addWidget(orderBookLabel)
-        controlLayout.addWidget(buyButton)
-        controlLayout.addWidget(sellButton)
+        self.controlLayout.addWidget(orderBookLabel)
+        self.controlLayout.addWidget(buyButton)
+        self.controlLayout.addWidget(sellButton)
 
         # Explicitly create a layout for the chart
         self.chartLayout = QVBoxLayout()  
@@ -54,7 +55,7 @@ class ForexApp(QMainWindow):
         self.chartLayout.addLayout(inputLayout)
 
         # Add the control layout and the chart layout to the main layout
-        mainLayout.addLayout(controlLayout, 1)
+        mainLayout.addLayout(self.controlLayout, 1)
         mainLayout.addLayout(self.chartLayout, 3)  # Allocating more space for the chart
 
         centralWidget.setLayout(mainLayout)
@@ -62,7 +63,8 @@ class ForexApp(QMainWindow):
         # Timer to update plot
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.updatePlot)
-        self.timer.start(100)  # Update interval in milliseconds
+        self.timer.timeout.connect(self.updateOrderBook)
+        self.timer.start(1000)  # Update interval in milliseconds
 
         self.updatePlot()  # Initial plot update
 
@@ -108,6 +110,29 @@ class ForexApp(QMainWindow):
         self.canvas = FigureCanvas(fig)
         self.chartLayout.addWidget(self.canvas)
         self.canvas.draw()
+
+    def updateOrderBook(self):
+        order_book_data = api_client.fetch_order_book(self.instrument)
+        self.display_order_book(order_book_data)
+
+
+    def display_order_book(self, order_book_df):
+        # Create the table widget if it does not exist
+        if not hasattr(self, 'orderBookTable'):
+            self.orderBookTable = QTableWidget(self)
+            self.orderBookTable.setColumnCount(3)  # Columns for Price, Long Count Percent, Short Count Percent
+            self.orderBookTable.setHorizontalHeaderLabels(['Price', 'Long Count %', 'Short Count %'])
+            self.controlLayout.addWidget(self.orderBookTable)  # Assume controlLayout is your QVBoxLayout
+
+        # Clear existing rows
+        self.orderBookTable.setRowCount(0)
+        
+        # Populate the table with order book data
+        for i in range(len(order_book_df)):
+            self.orderBookTable.insertRow(i)
+            self.orderBookTable.setItem(i, 0, QTableWidgetItem(str(order_book_df.iloc[i]['Price'])))
+            self.orderBookTable.setItem(i, 1, QTableWidgetItem(f"{order_book_df.iloc[i]['Long Count Percent']:.2f}%"))
+            self.orderBookTable.setItem(i, 2, QTableWidgetItem(f"{order_book_df.iloc[i]['Short Count Percent']:.2f}%"))
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)

@@ -29,3 +29,33 @@ def fetch_fx_data(instrument, granularity, count=50):
     df.index = df.index.tz_convert(adelaide_tz)
     
     return df
+
+def fetch_order_book(instrument):
+    api = API(access_token=config.access_token)
+    order_book_endpoint = instruments.InstrumentsOrderBook(instrument=instrument)
+    response = api.request(order_book_endpoint)
+    #print(response) 
+
+    # Extract the buckets from the response
+    buckets = response['orderBook']['buckets']
+    
+    # Prepare data for DataFrame
+    prices = []
+    long_counts = []
+    short_counts = []
+    for bucket in buckets:
+        prices.append(float(bucket['price']))
+        long_counts.append(float(bucket['longCountPercent']))  # Convert percentage to float
+        short_counts.append(float(bucket['shortCountPercent']))  # Convert percentage to float
+    
+    # Create a DataFrame
+    data = {
+        'Price': prices,
+        'Long Count Percent': long_counts,
+        'Short Count Percent': short_counts
+    }
+    
+    order_book_df = pd.DataFrame(data)
+    
+    return order_book_df
+
